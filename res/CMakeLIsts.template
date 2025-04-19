@@ -1,0 +1,11 @@
+cmake_minimum_required(VERSION 3.10)
+project(CSETUP_NAME LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD CSETUP_STANDARD)
+
+option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+
+add_executable(CSETUP_NAME
+                        src/main.cpp
+              )
+
+target_compile_features(CSETUP_NAME PRIVATE cxx_std_17)
