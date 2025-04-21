@@ -6,6 +6,13 @@
 
 namespace fs = std::filesystem;
 
+std::string read_resourse(std::string &&file)
+{
+    std::ifstream ifs("res/" + file);
+    using It = std::istreambuf_iterator<char>;
+    return std::string(It(ifs), It());
+}
+
 int main(int argc, char *argv[])
 {
     std::optional<std::string> project_name;
@@ -17,32 +24,17 @@ int main(int argc, char *argv[])
         if(cmd == "-f" || cmd == "--folder")
         {
             if(!(i < argc - 1))
-            {
-                std::cerr << "missing folder path\n";
-                return 1;
-            }
+                throw std::runtime_error("missing folder path\n");
             std::string arg = argv[++i];
             if(fs::exists(arg))
-            {
-                std::cerr << arg << "allready exists\n";
-                return 2;
-            }
+                throw std::runtime_error(arg + " allready exists\n");
             project_path = fs::absolute({arg});
         }
         else if(cmd == "-n" || cmd == "--name")
         {
             if(!(i < argc - 1))
-            {
-                std::cerr << "missing name\n";
-                return 1;
-            }
-            std::string arg = argv[++i];
-            if(arg.empty())
-            {
-                std::cerr << "name should be even 1 long\n";
-                return 3;
-            }
-            project_name = arg;
+                throw std::runtime_error("missing name\n");
+            project_name = argv[++i];
         }
     }
     std::string name = project_name.value_or("project");
@@ -59,24 +51,26 @@ int main(int argc, char *argv[])
         return 4;
     }
 
+    std::ofstream cmake_file(path / "CMakeLists.txt"); 
+    if(!cmake_file.is_open())
+        throw std::runtime_error("cannot make cmake file");
+
+    std::string cmake_lists = read_resourse("CMakeLists.template");
     std::string standard = "23";
-    std::string cmake_lists = [&](){
-        std::ifstream ifs("res/CMakeLists.template");
-        using It = std::istreambuf_iterator<char>;
-        return std::string(It(ifs), It());
-    }();
     cmake_lists = std::regex_replace(cmake_lists, std::regex("CSETUP_NAME"), name);
     cmake_lists = std::regex_replace(cmake_lists, std::regex("CSETUP_STANDARD"), standard);
-    
-    std::ofstream cmake_file(path / "CMakeLists.txt");
     cmake_file << cmake_lists;
     
     std::ofstream git_ignore_file(path / ".gitignore");
-    git_ignore_file << "build\n.vscode";
+    if(!git_ignore_file.is_open())
+        throw std::runtime_error("cannot make gitignore file");
+    git_ignore_file << read_resourse("gitignore.template");
 
-    fs::create_directory(path / "src");
-    std::ofstream main_cpp(path / "src/main.cpp");
-    main_cpp << "\n\nint main()\n{\n\t\n\treturn 0;\n}";
+    if(!fs::create_directory(path / "src"))
+        throw std::runtime_error("cannot create folder");
+    std::ofstream main_cpp_file(path / "src/main.cpp");
+    main_cpp_file << read_resourse("main.template");
+        
     
     return 0;
 }
