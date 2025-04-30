@@ -8,4 +8,4 @@ add_executable(csetup
                         src/main.cpp
               )
 
-target_compile_features(csetup PRIVATE cxx_std_17)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --static -fno-rtti") # modern cpp experience lol
