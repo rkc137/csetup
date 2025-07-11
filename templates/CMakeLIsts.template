@@ -7,5 +7,3 @@ option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 add_executable(CSETUP_NAME
                         src/main.cpp
               )
-
-target_compile_features(CSETUP_NAME PRIVATE cxx_std_17)

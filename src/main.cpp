@@ -4,6 +4,8 @@
 #include <filesystem>
 #include <regex>
 
+#include <string_literal.hpp>
+
 namespace fs = std::filesystem;
 
 std::string read_resourse(fs::path &&file)
@@ -13,9 +15,21 @@ std::string read_resourse(fs::path &&file)
     return std::string(It(ifs), It());
 }
 
+template <rkc::string_literal_t msg>
+void exit_if(bool expr)
+{
+    if(!expr) return; 
+    // i dont care if you cant grep this message btw
+    std::cout << msg << "\nusage: csetup\n"
+        << "\t- -f, --folder <path>: Specify the folder path for the project. Must not already exist.\n"
+        << "\t- -n, --name <name>: Specify the project name (must be at least 1 character long). \n";
+    std::exit(0);
+};
+
 int main(int argc, char *argv[])
 {
     std::optional<std::string> input_project_name;
+    std::optional<std::string> cxx_standart;
     std::optional<fs::path> input_project_path;
 
     auto templates_path = [&]() {
@@ -33,20 +47,19 @@ int main(int argc, char *argv[])
         std::string cmd = argv[i];
         if(cmd == "-f" || cmd == "--folder")
         {
-            if(!(i < argc - 1))
-                throw std::runtime_error("missing folder path\n");
+            exit_if<"missing folder path">(i >= argc - 1);
             std::string arg = argv[++i];
-            if(fs::exists(arg))
-                throw std::runtime_error(arg + " allready exists\n");
+            exit_if<"folder with this name allready exists">(fs::exists(arg));
             input_project_path = fs::absolute({arg});
         }
         else if(cmd == "-n" || cmd == "--name")
         {
-            if(!(i < argc - 1))
-                throw std::runtime_error("missing name\n");
+            exit_if<"missing name">(i >= argc - 1);
             input_project_name = argv[++i];
         }
+        else exit_if<"">(cmd == "-h" || cmd == "--help");
     }
+
     std::string project_name = input_project_name.value_or("project");
     fs::path project_path = [&](){
         if(input_project_path.has_value()) return input_project_path.value();
@@ -54,7 +67,7 @@ int main(int argc, char *argv[])
         std::string name = project_name; 
         for(int i = 1; fs::exists(crtpath / name); i++)
             name = project_name + std::to_string(i);
-        return fs::absolute(crtpath / name);
+        return crtpath / name;
     }();
     if(!fs::create_directory(project_path))
         throw std::runtime_error("cannot create " + project_path.string());
