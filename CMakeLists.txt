@@ -12,8 +12,19 @@ FetchContent_Declare(
     GIT_TAG main
 )
 FetchContent_MakeAvailable(string_literal)
+FetchContent_Declare(
+  battery-embed
+  GIT_REPOSITORY https://github.com/batterycenter/embed.git
+  GIT_TAG main
+)
+FetchContent_MakeAvailable(battery-embed)
 
-add_executable(csetup src/main.cpp)
-target_link_libraries(csetup PRIVATE rkc::string_literal)
+add_executable(${PROJECT_NAME} src/main.cpp)
+
+b_embed(${PROJECT_NAME} res/templates/CMakeLists.txt)
+b_embed(${PROJECT_NAME} res/templates/.gitignore)
+b_embed(${PROJECT_NAME} res/templates/main.cpp)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE rkc::string_literal)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --static -fno-rtti") # modern cpp experience lol
