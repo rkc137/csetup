@@ -4,7 +4,11 @@ set(CMAKE_CXX_STANDARD 23)
 
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
+set(FETCHCONTENT_UPDATES_DISCONNECTED OFF)
 include(FetchContent)
+if(DEFINED ENV{CMAKE_LIBS_DIR})
+    set(FETCHCONTENT_BASE_DIR "$ENV{CMAKE_LIBS_DIR}")
+endif()
 
 FetchContent_Declare(
     string_literal
@@ -12,6 +16,7 @@ FetchContent_Declare(
     GIT_TAG main
 )
 FetchContent_MakeAvailable(string_literal)
+
 FetchContent_Declare(
   battery-embed
   GIT_REPOSITORY https://github.com/batterycenter/embed.git
@@ -27,4 +32,4 @@ b_embed(${PROJECT_NAME} res/templates/main.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE rkc::string_literal)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --static -fno-rtti") # modern cpp experience lol
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DB_PRODUCTION_MODE=ON --static -fno-rtti") # modern cpp experience lol

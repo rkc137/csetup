@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 3.10)
 project(CSETUP_NAME LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD CSETUP_STANDARD)
 
+set(FETCHCONTENT_UPDATES_DISCONNECTED OFF)
+include(FetchContent)
+if(DEFINED ENV{CMAKE_LIBS_DIR})
+    set(FETCHCONTENT_BASE_DIR "$ENV{CMAKE_LIBS_DIR}")
+endif()
+
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
 add_executable(CSETUP_NAME src/main.cpp)
