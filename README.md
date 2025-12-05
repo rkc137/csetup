@@ -11,14 +11,13 @@ csetup [options]
 ### Options
 
 - `-f`, `--folder <path>`: Specify the folder path for the project. Must not already exist.
-- `-n`, `--name <name>`: Specify the project name (must be at least 1 character long).
 
 ### Example
 
 1. Create a project named "MyProject" in folder where it calls was:
 
    ```bash
-   csetup -n MyProject
+   csetup MyProject
    ```
 
 2. Create a project in a specified folder (by default project name will be the same as folders):
@@ -29,7 +28,7 @@ csetup [options]
 
 ## Generated Files
 
-output folder looks like this
+output folder looks like this (i dont use ai for that i swear)
 
 ```
 /MyProject

@@ -6,9 +6,6 @@ option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
 set(FETCHCONTENT_UPDATES_DISCONNECTED OFF)
 include(FetchContent)
-if(DEFINED ENV{CMAKE_LIBS_DIR})
-    set(FETCHCONTENT_BASE_DIR "$ENV{CMAKE_LIBS_DIR}")
-endif()
 
 FetchContent_Declare(
     string_literal

@@ -15,21 +15,27 @@ void exit_if(bool expr)
 {
     if(!expr) return; 
     // i dont care if you cant grep this message btw
-    std::cout << msg << "\nusage: csetup\n"
-        << "\t\t-f, --folder <path>: Specify the folder path for the project. Must not already exist.\n"
-        << "\t\t-n, --name <name>: Specify the project name (must be at least 1 character long). \n";
+    std::cout << msg << "\nusage: csetup [name] <options>\n"
+        "\t\t-f, --folder <path>: Specify the folder path for the project. Should not already exist.\n";
     std::exit(0);
 };
 
 int main(int argc, char *argv[])
 {
+    auto is_valid = [](std::string_view str) -> bool {
+        return str.size() && std::ranges::none_of(str, [](char c){
+            static constexpr std::string_view invalid_chars = R"(\/:*?"<>|)";
+            return invalid_chars.find(c) != std::string::npos;
+        });
+    };
+
     std::optional<std::string> input_project_name;
     std::optional<std::string> cxx_standart;
     std::optional<fs::path> input_project_path;
 
     for(int i = 1; i < argc; i++)
     {
-        std::string cmd = argv[i];
+        std::string_view cmd = argv[i];
         if(cmd == "-f" || cmd == "--folder")
         {
             exit_if<"missing folder path">(i >= argc - 1);
@@ -37,23 +43,23 @@ int main(int argc, char *argv[])
             exit_if<"folder with this name allready exists">(fs::exists(arg));
             input_project_path = fs::absolute({arg});
         }
-        else if(cmd == "-n" || cmd == "--name")
+        else
         {
-            exit_if<"missing name">(i >= argc - 1);
-            input_project_name = argv[++i];
+            exit_if<"">(cmd == "-h" || cmd == "--help");
+            exit_if<"invalid arguments">(!is_valid(cmd) || input_project_name.has_value());
+            input_project_name = cmd;
         }
-        else exit_if<"">(cmd == "-h" || cmd == "--help");
     }
 
     std::string project_name = input_project_name.value_or("project");
-    fs::path project_path = [&](){
+    fs::path project_path = std::invoke([&](){
         if(input_project_path.has_value()) return input_project_path.value();
         auto crtpath = fs::current_path();
         std::string name = project_name; 
         for(int i = 1; fs::exists(crtpath / name); i++)
             name = project_name + std::to_string(i);
         return crtpath / name;
-    }();
+    });
     if(!fs::create_directory(project_path))
         throw std::runtime_error("cannot create " + project_path.string());
                 
